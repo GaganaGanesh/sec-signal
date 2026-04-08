@@ -49,7 +49,10 @@ html, body, [class*="css"] {
 
 /* Main content padding */
 .block-container { padding-top: 1.2rem !important; max-width: 100% !important; padding-left: 2rem !important; padding-right: 2rem !important; }
-header[data-testid="stHeader"] { background: transparent !important; }
+header[data-testid="stHeader"] { display: none !important; }
+[data-testid="stToolbar"]      { display: none !important; }
+[data-testid="stDecoration"]   { display: none !important; }
+.stDeployButton                { display: none !important; }
 
 /* ── Sidebar ─────────────────────────────────────────── */
 section[data-testid="stSidebar"] {
