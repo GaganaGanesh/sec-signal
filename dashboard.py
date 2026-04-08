@@ -55,9 +55,22 @@ header[data-testid="stHeader"] { display: none !important; }
 .stDeployButton                { display: none !important; }
 
 /* ── Sidebar ─────────────────────────────────────────── */
-section[data-testid="stSidebar"] { min-width: 240px !important;
+/* Force sidebar always visible — overrides Cloud session state */
+section[data-testid="stSidebar"] {
+    min-width: 240px !important;
+    max-width: 240px !important;
+    transform: none !important;
+    visibility: visible !important;
+    display: block !important;
     background: #111827 !important;
     border-right: 1px solid #1F2937 !important;
+}
+/* Hide the collapse/expand toggle button */
+[data-testid="collapsedControl"],
+button[kind="header"][aria-label="Close sidebar"],
+button[aria-label="Close sidebar"],
+section[data-testid="stSidebar"] > div:first-child > div > button {
+    display: none !important;
 }
 section[data-testid="stSidebar"] * { color: #D1D5DB !important; }
 section[data-testid="stSidebar"] .stRadio label {
