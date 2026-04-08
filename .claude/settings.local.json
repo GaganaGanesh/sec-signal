@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /Users/Lenovo/sec_signal/venv/lib/python*/site-packages/)",
+      "Bash(/Users/Lenovo/sec_signal/venv/bin/pip install:*)",
+      "Bash(venv/bin/python edgar_pull.py AAPL Q1 2024)",
+      "Bash(curl -s \"https://www.sec.gov/Archives/edgar/data/320193/000032019324000069/0000320193-24-000069-index.htm\" -H \"User-Agent: sec-signal-research/1.0 research@example.com\")",
+      "Bash(venv/bin/python3 -c \":*)",
+      "Bash(venv/bin/python edgar_pull.py MSFT Q3 2023)",
+      "Bash(venv/bin/python edgar_pull.py JNJ Q2 2024)",
+      "Bash(venv/bin/python similarity_score.py AAPL Q1 2024)",
+      "Bash(venv/bin/python -c \"import ast; ast.parse\\(open\\(''sp500_batch.py''\\).read\\(\\)\\); print\\(''Syntax OK''\\)\")",
+      "Bash(/Users/Lenovo/sec_signal/venv/bin/python -c \"import altair; print\\(altair.__version__\\)\")",
+      "Bash(/Users/Lenovo/sec_signal/venv/bin/python -c \":*)",
+      "Bash(venv/bin/python -c \"import streamlit; print\\(streamlit.__version__\\)\")",
+      "Bash(python3 -c \":*)",
+      "Bash(source venv/bin/activate)",
+      "Bash(python3 -c \"import anthropic; print\\(''anthropic version:'', anthropic.__version__\\)\")",
+      "Bash(pip install:*)",
+      "Bash(python3 -c \"import anthropic; print\\(''anthropic'', anthropic.__version__\\)\")",
+      "Bash(env)",
+      "Bash(curl -s http://localhost:8501)",
+      "Bash(python3 -c \"import csv; rows=list\\(csv.DictReader\\(open\\(''/Users/Lenovo/sec_signal/scores.csv''\\)\\)\\); print\\(f''ok: {sum\\(1 for r in rows if r[\"\"status\"\"]==\"\"ok\"\"\\)}, failed: {sum\\(1 for r in rows if r[\"\"status\"\"]==\"\"failed\"\"\\)}''\\)\")",
+      "Bash(python3 -c \"import streamlit as st; print\\(st.__version__\\)\")",
+      "Bash(python -c \"import ast, sys; ast.parse\\(open\\(''dashboard.py''\\).read\\(\\)\\); print\\(''Syntax OK''\\)\")",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\(''dashboard.py''\\).read\\(\\)\\); print\\(''Syntax OK''\\)\")",
+      "Bash(source .venv/bin/activate)",
+      "Bash(pip3 show:*)",
+      "Bash(source /Users/Lenovo/sec_signal/venv/bin/activate)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(pkill -f \"streamlit run\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8503/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8504/)",
+      "Bash(/Users/Lenovo/sec_signal/venv/bin/python -m py_compile dashboard.py)",
+      "Bash(/Users/Lenovo/sec_signal/venv/bin/python3 -c ':*)",
+      "Bash(/Users/Lenovo/sec_signal/venv/bin/python -m py_compile similarity_score.py)",
+      "Bash(/Users/Lenovo/sec_signal/venv/bin/python -m py_compile sp500_batch.py)"
+    ]
+  }
+}

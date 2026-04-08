@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sec-signal",
+      "runtimeExecutable": "/Users/Lenovo/sec_signal/venv/bin/streamlit",
+      "runtimeArgs": ["run", "dashboard.py", "--server.headless", "true", "--server.port", "8504"],
+      "port": 8504,
+      "autoPort": false
+    }
+  ]
+}
