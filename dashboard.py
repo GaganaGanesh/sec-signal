@@ -55,7 +55,7 @@ header[data-testid="stHeader"] { display: none !important; }
 .stDeployButton                { display: none !important; }
 
 /* ── Sidebar ─────────────────────────────────────────── */
-section[data-testid="stSidebar"] {
+section[data-testid="stSidebar"] { min-width: 240px !important;
     background: #111827 !important;
     border-right: 1px solid #1F2937 !important;
 }
