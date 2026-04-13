@@ -2235,55 +2235,141 @@ def _case_chart(
     signal_label: str,
     event_label: str,
 ) -> alt.Chart:
-    """Z-score timeline with a dashed amber signal line and a solid red event line."""
-    source = pd.DataFrame({"quarter": quarters, "zscore": zscores})
+    """Z-score timeline: sorted chronologically, with threshold line, shaded gap, and
+    vertical signal/event annotations."""
 
+    # ── 1. Sort chronologically ───────────────────────────────────────────────
+    def _q_key(q: str) -> int:
+        qn = int(q[1])
+        yy = int(q.split("'")[1].strip())
+        return (2000 + yy) * 4 + (qn - 1)
+
+    pairs = sorted(zip(quarters, zscores), key=lambda t: _q_key(t[0]))
+    qs = [p[0] for p in pairs]
+    zs = [p[1] for p in pairs]
+    n = len(qs)
+    xi = list(range(n))
+    sig_xi = float(qs.index(signal_quarter))
+    evt_xi = float(qs.index(event_quarter))
+
+    # Months between signal quarter and event quarter
+    def _q_months(q: str) -> int:
+        qn = int(q[1])
+        yy = int(q.split("'")[1].strip())
+        return (2000 + yy) * 12 + (qn - 1) * 3
+
+    months_gap = abs(_q_months(event_quarter) - _q_months(signal_quarter))
+
+    source = pd.DataFrame({"xi": xi, "quarter": qs, "zscore": zs})
+
+    # Numeric x-axis with quarter strings as labels via JS expression
+    qs_js = "[" + ",".join(f'"{q}"' for q in qs) + "]"
+    x_ax = alt.Axis(
+        title=None, values=xi,
+        labelExpr=f"{qs_js}[datum.value]",
+        labelAngle=-30, labelFontSize=11,
+    )
+    xs = alt.Scale(domain=[-0.5, n - 0.5])
+    y_enc = alt.Y(
+        "zscore:Q", title="Z-Score",
+        scale=alt.Scale(zero=False),
+        axis=alt.Axis(titleFontSize=11, labelFontSize=10),
+    )
+
+    # ── Z-score line + points ─────────────────────────────────────────────────
     line = (
         alt.Chart(source)
         .mark_line(color="#3B82F6", strokeWidth=2.5)
-        .encode(
-            x=alt.X("quarter:O",
-                    axis=alt.Axis(title=None, labelAngle=-30, labelFontSize=11)),
-            y=alt.Y("zscore:Q", title="Z-Score",
-                    scale=alt.Scale(zero=False),
-                    axis=alt.Axis(titleFontSize=11, labelFontSize=10)),
-        )
+        .encode(x=alt.X("xi:Q", scale=xs, axis=x_ax), y=y_enc)
     )
-    points = (
+    pts = (
         alt.Chart(source)
         .mark_point(color="#3B82F6", size=70, filled=True)
         .encode(
-            x="quarter:O",
+            x=alt.X("xi:Q", scale=xs),
             y="zscore:Q",
-            tooltip=[
-                alt.Tooltip("quarter:O", title="Quarter"),
-                alt.Tooltip("zscore:Q", title="Z-Score", format=".2f"),
-            ],
+            tooltip=[alt.Tooltip("quarter:N", title="Quarter"),
+                     alt.Tooltip("zscore:Q", title="Z-Score", format=".2f")],
         )
     )
-    sig_df = pd.DataFrame({"quarter": [signal_quarter]})
-    sig_rule = (
-        alt.Chart(sig_df).mark_rule(color="#F59E0B", strokeWidth=2, strokeDash=[5, 3])
-        .encode(x=alt.X("quarter:O"))
+
+    # ── 2. Horizontal reference line at z = 2.0 ───────────────────────────────
+    ref_df = pd.DataFrame({"xi": [0.0], "zscore": [2.0]})
+    ref_rule = (
+        alt.Chart(ref_df)
+        .mark_rule(color="#9CA3AF", strokeWidth=1.5, strokeDash=[4, 4])
+        .encode(y=alt.Y("zscore:Q"))
     )
-    sig_text = (
+    ref_lbl_df = pd.DataFrame({"xi": [float(n - 1)], "zscore": [2.0]})
+    ref_txt = (
+        alt.Chart(ref_lbl_df)
+        .mark_text(align="right", dx=0, dy=-8,
+                   fontSize=10, color="#9CA3AF", fontStyle="italic")
+        .encode(
+            x=alt.X("xi:Q", scale=xs),
+            y=alt.Y("zscore:Q"),
+            text=alt.value("elevated threshold"),
+        )
+    )
+
+    # ── 3. Shaded region: signal → event ──────────────────────────────────────
+    shade_df = pd.DataFrame({"x1": [sig_xi], "x2": [evt_xi]})
+    shade = (
+        alt.Chart(shade_df)
+        .mark_rect(opacity=0.10, color="#F59E0B")
+        .encode(
+            x=alt.X("x1:Q", scale=xs),
+            x2=alt.X2("x2:Q"),
+            y=alt.value(0),
+            y2=alt.value(260),
+        )
+    )
+    # Months label centered inside the shaded band
+    mid_xi = (sig_xi + evt_xi) / 2.0
+    months_df = pd.DataFrame({"xi": [mid_xi]})
+    months_txt = (
+        alt.Chart(months_df)
+        .mark_text(align="center", fontSize=10, fontWeight="bold", color="#D97706")
+        .encode(
+            x=alt.X("xi:Q", scale=xs),
+            y=alt.value(8),
+            text=alt.value(f"{months_gap} months"),
+        )
+    )
+
+    # ── Vertical annotation rules ──────────────────────────────────────────────
+    sig_df = pd.DataFrame({"xi": [sig_xi]})
+    sig_rule = (
+        alt.Chart(sig_df)
+        .mark_rule(color="#F59E0B", strokeWidth=2, strokeDash=[5, 3])
+        .encode(x=alt.X("xi:Q", scale=xs))
+    )
+    sig_txt = (
         alt.Chart(sig_df)
         .mark_text(align="left", dx=6, fontSize=10, fontWeight="bold", color="#D97706")
-        .encode(x=alt.X("quarter:O"), y=alt.value(18),
+        .encode(x=alt.X("xi:Q", scale=xs), y=alt.value(22),
                 text=alt.value(f"\u25b2 {signal_label}"))
     )
-    evt_df = pd.DataFrame({"quarter": [event_quarter]})
+    evt_df = pd.DataFrame({"xi": [evt_xi]})
     evt_rule = (
-        alt.Chart(evt_df).mark_rule(color="#EF4444", strokeWidth=2)
-        .encode(x=alt.X("quarter:O"))
+        alt.Chart(evt_df)
+        .mark_rule(color="#EF4444", strokeWidth=2)
+        .encode(x=alt.X("xi:Q", scale=xs))
     )
-    evt_text = (
+    evt_txt = (
         alt.Chart(evt_df)
         .mark_text(align="right", dx=-6, fontSize=10, fontWeight="bold", color="#DC2626")
-        .encode(x=alt.X("quarter:O"), y=alt.value(36),
+        .encode(x=alt.X("xi:Q", scale=xs), y=alt.value(40),
                 text=alt.value(f"\u25cf {event_label}"))
     )
-    return (line + points + sig_rule + sig_text + evt_rule + evt_text).properties(height=260)
+
+    return (
+        shade + months_txt
+        + ref_rule + ref_txt
+        + line + pts
+        + sig_rule + sig_txt
+        + evt_rule + evt_txt
+    ).properties(height=260)
 
 
 def _pills_html(phrases: list, bg: str, fg: str, border: str) -> str:
