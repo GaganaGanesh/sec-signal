@@ -1351,14 +1351,11 @@ def render_table(filtered_df: pd.DataFrame, mq_df: pd.DataFrame | None = None) -
 
     # Add confidence columns if computed upstream
     if has_conf:
-        conf_map  = working.set_index(working.index)["signal_confidence"]
-        dots_map  = working.set_index(working.index).get("conf_dots",   pd.Series(dtype=str))
-        factor_map = working.set_index(working.index).get("conf_factors", pd.Series(dtype=str))
-        display["signal_confidence"] = working["signal_confidence"].values
+        display["signal_confidence"] = working["signal_confidence"].reset_index(drop=True).values
         if "conf_dots" in working.columns:
-            display["conf_dots"]    = working["conf_dots"].values
+            display["conf_dots"]    = working["conf_dots"].reset_index(drop=True).values
         if "conf_factors" in working.columns:
-            display["conf_factors"] = working["conf_factors"].values
+            display["conf_factors"] = working["conf_factors"].reset_index(drop=True).values
 
     col_config = {
         "ticker":        st.column_config.TextColumn("Ticker", width=80),
