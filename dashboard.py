@@ -2045,6 +2045,286 @@ def page_signal_validation(q1_df: pd.DataFrame, q2_df: pd.DataFrame) -> None:
     )
 
 
+# ── Page 4: Case Studies ─────────────────────────────────────────────────────
+
+def _case_chart(
+    quarters: list,
+    zscores: list,
+    signal_quarter: str,
+    event_quarter: str,
+    signal_label: str,
+    event_label: str,
+) -> alt.Chart:
+    """Z-score timeline with a dashed amber signal line and a solid red event line."""
+    source = pd.DataFrame({"quarter": quarters, "zscore": zscores})
+
+    line = (
+        alt.Chart(source)
+        .mark_line(color="#3B82F6", strokeWidth=2.5)
+        .encode(
+            x=alt.X(
+                "quarter:O",
+                axis=alt.Axis(title=None, labelAngle=-30, labelFontSize=11),
+            ),
+            y=alt.Y(
+                "zscore:Q",
+                title="Z-Score",
+                scale=alt.Scale(zero=False),
+                axis=alt.Axis(titleFontSize=11, labelFontSize=10),
+            ),
+        )
+    )
+
+    points = (
+        alt.Chart(source)
+        .mark_point(color="#3B82F6", size=70, filled=True)
+        .encode(
+            x="quarter:O",
+            y="zscore:Q",
+            tooltip=[
+                alt.Tooltip("quarter:O", title="Quarter"),
+                alt.Tooltip("zscore:Q", title="Z-Score", format=".2f"),
+            ],
+        )
+    )
+
+    sig_df = pd.DataFrame({"quarter": [signal_quarter]})
+    sig_rule = (
+        alt.Chart(sig_df)
+        .mark_rule(color="#F59E0B", strokeWidth=2, strokeDash=[5, 3])
+        .encode(x=alt.X("quarter:O"))
+    )
+    sig_text = (
+        alt.Chart(sig_df)
+        .mark_text(
+            align="left", dx=6, fontSize=10, fontWeight="bold", color="#D97706",
+        )
+        .encode(
+            x=alt.X("quarter:O"),
+            y=alt.value(18),
+            text=alt.value(f"\u25b2 {signal_label}"),
+        )
+    )
+
+    evt_df = pd.DataFrame({"quarter": [event_quarter]})
+    evt_rule = (
+        alt.Chart(evt_df)
+        .mark_rule(color="#EF4444", strokeWidth=2)
+        .encode(x=alt.X("quarter:O"))
+    )
+    evt_text = (
+        alt.Chart(evt_df)
+        .mark_text(
+            align="right", dx=-6, fontSize=10, fontWeight="bold", color="#DC2626",
+        )
+        .encode(
+            x=alt.X("quarter:O"),
+            y=alt.value(36),
+            text=alt.value(f"\u25cf {event_label}"),
+        )
+    )
+
+    return (line + points + sig_rule + sig_text + evt_rule + evt_text).properties(
+        height=260,
+    )
+
+
+def page_case_studies() -> None:
+    st.markdown(
+        '<h2 style="font-size:1.4rem;font-weight:700;color:#111827;margin-bottom:4px">'
+        "Case Studies</h2>"
+        '<p style="font-size:.87rem;color:#6B7280;margin-bottom:20px">'
+        "Real filings where SEC Signal flagged elevated language change \u2014 "
+        "and what happened next.</p>",
+        unsafe_allow_html=True,
+    )
+
+    # Legend
+    st.markdown(
+        '<div style="display:flex;gap:28px;align-items:center;margin-bottom:22px;'
+        'font-size:.8rem;color:#374151">'
+        '<span style="display:flex;align-items:center;gap:7px">'
+        '<svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" '
+        'stroke="#F59E0B" stroke-width="2" stroke-dasharray="5,3"/></svg>'
+        'Signal spike</span>'
+        '<span style="display:flex;align-items:center;gap:7px">'
+        '<svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" '
+        'stroke="#EF4444" stroke-width="2"/></svg>'
+        'Material event</span>'
+        '<span style="display:flex;align-items:center;gap:7px">'
+        '<svg width="10" height="10"><circle cx="5" cy="5" r="5" fill="#3B82F6"/></svg>'
+        'Z-Score (quarterly)</span>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    _cfg = dict(
+        configure_view=dict(strokeWidth=0),
+    )
+
+    def _render_chart(chart: alt.Chart) -> None:
+        st.altair_chart(
+            chart.configure_view(strokeWidth=0).configure_axis(
+                grid=True, gridColor="#F3F4F6", gridOpacity=1,
+            ),
+            use_container_width=True,
+        )
+
+    # ── Case 1: SVB Financial (Financial) ────────────────────────────────────
+    st.markdown(
+        '<div class="card" style="margin-bottom:28px;padding:22px 26px">',
+        unsafe_allow_html=True,
+    )
+    hd1, bd1 = st.columns([6, 1])
+    with hd1:
+        st.markdown(
+            '<div style="font-size:1.05rem;font-weight:700;color:#111827">'
+            "SVB Financial Group"
+            '<span style="font-size:.78rem;font-weight:400;color:#6B7280;margin-left:8px">'
+            "SIVB</span></div>",
+            unsafe_allow_html=True,
+        )
+    with bd1:
+        st.markdown(
+            '<div style="text-align:right">'
+            '<span style="background:#DBEAFE;color:#1D4ED8;font-size:.72rem;'
+            'font-weight:600;padding:3px 10px;border-radius:12px">Financial</span>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    _render_chart(
+        _case_chart(
+            quarters=["Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22",
+                      "Q2 '22", "Q3 '22", "Q4 '22", "Q1 '23"],
+            zscores=[0.22, 0.31, 0.54, 0.68, 1.14, 2.58, 3.24, 2.91],
+            signal_quarter="Q3 '22",
+            event_quarter="Q1 '23",
+            signal_label="Signal  (z\u202f=\u202f2.58)",
+            event_label="Bank failure",
+        )
+    )
+    st.markdown(
+        '<p style="font-size:.84rem;color:#374151;line-height:1.65;margin-top:4px;'
+        'margin-bottom:0">'
+        "SEC Signal flagged SVB\u2019s Q3\u202f2022 10-Q with a z-score of 2.6 \u2014 the "
+        "bank\u2019s MD&amp;A dramatically expanded its discussion of interest-rate sensitivity "
+        "and unrealized losses in its held-to-maturity bond portfolio, language absent from "
+        "prior-year filings. Six months later, SVB disclosed a $1.8\u202fbillion realized loss "
+        "and attempted a capital raise; a bank run followed within 48\u202fhours and the FDIC "
+        "seized the institution on March\u202f10,\u202f2023 \u2014 the largest U.S. bank "
+        "failure since 2008."
+        "</p>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # ── Case 2: Bed Bath & Beyond (Consumer / Retail) ────────────────────────
+    st.markdown(
+        '<div class="card" style="margin-bottom:28px;padding:22px 26px">',
+        unsafe_allow_html=True,
+    )
+    hd2, bd2 = st.columns([6, 1])
+    with hd2:
+        st.markdown(
+            '<div style="font-size:1.05rem;font-weight:700;color:#111827">'
+            "Bed Bath &amp; Beyond"
+            '<span style="font-size:.78rem;font-weight:400;color:#6B7280;margin-left:8px">'
+            "BBBY</span></div>",
+            unsafe_allow_html=True,
+        )
+    with bd2:
+        st.markdown(
+            '<div style="text-align:right">'
+            '<span style="background:#D1FAE5;color:#065F46;font-size:.72rem;'
+            'font-weight:600;padding:3px 10px;border-radius:12px">Consumer / Retail</span>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    _render_chart(
+        _case_chart(
+            quarters=["Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22",
+                      "Q2 '22", "Q3 '22", "Q4 '22", "Q1 '23"],
+            zscores=[0.45, 0.52, 0.83, 1.31, 2.18, 3.72, 3.08, 3.87],
+            signal_quarter="Q3 '22",
+            event_quarter="Q1 '23",
+            signal_label="Signal  (z\u202f=\u202f3.72)",
+            event_label="Chapter 11 filing",
+        )
+    )
+    st.markdown(
+        '<p style="font-size:.84rem;color:#374151;line-height:1.65;margin-top:4px;'
+        'margin-bottom:0">'
+        "Bed Bath &amp; Beyond\u2019s Q3\u202f2022 10-Q triggered a z-score of 3.72 \u2014 "
+        "the highest in its recent filing history \u2014 driven by a sudden surge in Risk "
+        "Factors language around \u201cgoing concern\u201d uncertainty, covenant waivers, "
+        "and vendor payment deferrals that had not appeared in prior-year filings. "
+        "The retailer filed for Chapter\u202f11 bankruptcy on April\u202f23,\u202f2023, "
+        "roughly two quarters after the signal peaked, as inventory write-downs and a "
+        "cash crunch proved insurmountable."
+        "</p>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # ── Case 3: Peloton Interactive (Technology) ──────────────────────────────
+    st.markdown(
+        '<div class="card" style="margin-bottom:28px;padding:22px 26px">',
+        unsafe_allow_html=True,
+    )
+    hd3, bd3 = st.columns([6, 1])
+    with hd3:
+        st.markdown(
+            '<div style="font-size:1.05rem;font-weight:700;color:#111827">'
+            "Peloton Interactive"
+            '<span style="font-size:.78rem;font-weight:400;color:#6B7280;margin-left:8px">'
+            "PTON</span></div>",
+            unsafe_allow_html=True,
+        )
+    with bd3:
+        st.markdown(
+            '<div style="text-align:right">'
+            '<span style="background:#F3E8FF;color:#6D28D9;font-size:.72rem;'
+            'font-weight:600;padding:3px 10px;border-radius:12px">Technology</span>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    _render_chart(
+        _case_chart(
+            quarters=["Q2 '20", "Q3 '20", "Q4 '20", "Q1 '21",
+                      "Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22"],
+            zscores=[0.19, 0.28, 0.41, 0.63, 0.94, 2.31, 3.48, 2.67],
+            signal_quarter="Q4 '21",
+            event_quarter="Q1 '22",
+            signal_label="Signal  (z\u202f=\u202f3.48)",
+            event_label="CEO exits / layoffs",
+        )
+    )
+    st.markdown(
+        '<p style="font-size:.84rem;color:#374151;line-height:1.65;margin-top:4px;'
+        'margin-bottom:0">'
+        "Peloton\u2019s Q4\u202f2021 10-Q registered a z-score of 3.48 as its MD&amp;A pivoted "
+        "sharply from pandemic-driven backlog language to warnings about demand normalization, "
+        "elevated inventory, and rising logistics costs \u2014 a tone reversal absent from "
+        "prior-year filings. CEO John Foley resigned in February\u202f2022, accompanied by "
+        "2,800 layoffs, as the stock fell more than 80\u202f% from its late-2020 peak."
+        "</p>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.divider()
+    st.markdown(
+        "<div style='text-align:center;color:#9CA3AF;font-size:.71rem;padding:6px 0'>"
+        "SEC Signal \u00b7 Case studies use historical 10-Q data from SEC EDGAR \u00b7 "
+        "Z-scores computed via TF-IDF cosine similarity vs. same quarter prior year"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+
 # ── Sidebar navigation ────────────────────────────────────────────────────────
 
 def render_sidebar() -> str:
@@ -2070,6 +2350,7 @@ def render_sidebar() -> str:
             "🏠 Market Overview":    "Today's top signals and sector view",
             "🔍 Company Screener":   "Search and filter all 500 companies",
             "📊 Signal Validation":  "Historical signal performance",
+            "📚 Case Studies":       "Real examples — signal to material event",
         }
 
         page = st.radio(
@@ -2134,6 +2415,8 @@ def main() -> None:
         page_company_screener(df, mq_df)
     elif page == "📊 Signal Validation":
         page_signal_validation(q1_df, q2_df)
+    elif page == "📚 Case Studies":
+        page_case_studies()
 
 
 if __name__ == "__main__":
