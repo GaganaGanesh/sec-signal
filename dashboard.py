@@ -2227,6 +2227,13 @@ _CASE_STUDIES = [
 ]
 
 
+def _q_key(q: str) -> int:
+    """Convert a quarter string like \"Q3 '22\" to an integer for chronological sorting."""
+    qn = int(q[1])
+    yy = int(q.split("'")[1].strip())
+    return (2000 + yy) * 4 + (qn - 1)
+
+
 def _case_chart(
     quarters: list,
     zscores: list,
@@ -2239,11 +2246,6 @@ def _case_chart(
     vertical signal/event annotations."""
 
     # ── 1. Sort chronologically ───────────────────────────────────────────────
-    def _q_key(q: str) -> int:
-        qn = int(q[1])
-        yy = int(q.split("'")[1].strip())
-        return (2000 + yy) * 4 + (qn - 1)
-
     pairs = sorted(zip(quarters, zscores), key=lambda t: _q_key(t[0]))
     qs = [p[0] for p in pairs]
     zs = [p[1] for p in pairs]
@@ -2375,12 +2377,12 @@ def _case_chart(
 def _pills_html(phrases: list, bg: str, fg: str, border: str) -> str:
     pills = "".join(
         f'<span style="display:inline-block;background:{bg};color:{fg};'
-        f'border:1px solid {border};border-radius:14px;padding:3px 11px;'
-        f'font-size:.78rem;font-weight:500;margin:3px 4px 3px 0;white-space:nowrap">'
+        f'border:1px solid {border};border-radius:14px;padding:5px 14px;'
+        f'font-size:.83rem;font-weight:500;margin:4px 5px 4px 0;white-space:nowrap">'
         f"{p}</span>"
         for p in phrases
     )
-    return f'<div style="line-height:2.4">{pills}</div>'
+    return f'<div style="line-height:2.6">{pills}</div>'
 
 
 def _section_bar_chart(mda: int, rf: int) -> alt.Chart:
@@ -2422,57 +2424,76 @@ def _section_bar_chart(mda: int, rf: int) -> alt.Chart:
 
 
 def _price_chart(cs: dict) -> alt.Chart:
-    qs = cs["price_quarters"]
-    ps = cs["prices"]
-    source = pd.DataFrame({"quarter": qs, "price": ps})
+    # ── Sort chronologically using numeric keys ────────────────────────────────
+    pairs = sorted(zip(cs["price_quarters"], cs["prices"]), key=lambda t: _q_key(t[0]))
+    qs = [p[0] for p in pairs]
+    ps = [p[1] for p in pairs]
+    n = len(qs)
+    xi = list(range(n))
+
+    source = pd.DataFrame({"xi": xi, "quarter": qs, "price": ps})
+
+    qs_js = "[" + ",".join(f'"{q}"' for q in qs) + "]"
+    x_ax = alt.Axis(
+        title=None, values=xi,
+        labelExpr=f"{qs_js}[datum.value]",
+        labelAngle=-30, labelFontSize=10,
+    )
+    xs = alt.Scale(domain=[-0.5, n - 0.5])
 
     line = (
         alt.Chart(source)
         .mark_line(color="#9CA3AF", strokeWidth=2)
         .encode(
-            x=alt.X("quarter:O",
-                    axis=alt.Axis(title=None, labelAngle=-30, labelFontSize=10)),
+            x=alt.X("xi:Q", scale=xs, axis=x_ax),
             y=alt.Y("price:Q", title="Price (USD)",
                     scale=alt.Scale(zero=False),
                     axis=alt.Axis(labelFontSize=10, titleFontSize=10, format="$.0f")),
-            tooltip=[alt.Tooltip("quarter:O", title="Quarter"),
+            tooltip=[alt.Tooltip("quarter:N", title="Quarter"),
                      alt.Tooltip("price:Q", title="Price", format="$.2f")],
         )
     )
 
-    evt_rows = [
-        {"quarter": cs["prior_q"],        "price": ps[qs.index(cs["prior_q"])],
-         "label": "Prior filing", "clr": "#9CA3AF"},
-        {"quarter": cs["price_signal_q"], "price": ps[qs.index(cs["price_signal_q"])],
-         "label": "Signal",       "clr": "#F59E0B"},
-        {"quarter": cs["price_event_q"],  "price": ps[qs.index(cs["price_event_q"])],
-         "label": "Material event", "clr": "#EF4444"},
-    ]
+    def _q_xi(q):
+        return float(qs.index(q)) if q in qs else None
+
+    evt_rows = []
+    for q, label, clr in [
+        (cs["prior_q"], "Prior filing", "#9CA3AF"),
+        (cs["price_signal_q"], "Signal", "#F59E0B"),
+        (cs["price_event_q"], "Material event", "#EF4444"),
+    ]:
+        idx = _q_xi(q)
+        if idx is not None:
+            evt_rows.append({"xi": idx, "quarter": q,
+                             "price": ps[qs.index(q)], "label": label, "clr": clr})
+
     markers = pd.DataFrame(evt_rows)
 
     dots = (
         alt.Chart(markers)
         .mark_point(size=110, filled=True)
         .encode(
-            x="quarter:O",
+            x=alt.X("xi:Q", scale=xs),
             y="price:Q",
             color=alt.Color("clr:N", scale=None),
             tooltip=[alt.Tooltip("label:N", title="Event"),
-                     alt.Tooltip("quarter:O", title="Quarter"),
+                     alt.Tooltip("quarter:N", title="Quarter"),
                      alt.Tooltip("price:Q", title="Price", format="$.2f")],
         )
     )
 
+    event_xi = _q_xi(cs["price_event_q"])
     ann_df = pd.DataFrame({
-        "quarter": [cs["price_event_q"]],
-        "price":   [ps[qs.index(cs["price_event_q"])]],
-        "label":   [f"{cs['drawdown_pct']}% from signal"],
+        "xi": [event_xi],
+        "price": [ps[qs.index(cs["price_event_q"])]],
+        "label": [f"{cs['drawdown_pct']}% from signal"],
     })
     ann = (
         alt.Chart(ann_df)
         .mark_text(align="right", dx=-10, dy=-14,
                    fontSize=11, fontWeight="bold", color="#DC2626")
-        .encode(x="quarter:O", y="price:Q", text="label:N")
+        .encode(x=alt.X("xi:Q", scale=xs), y="price:Q", text="label:N")
     )
 
     return (
@@ -2544,32 +2565,26 @@ def _render_case_card(cs: dict) -> None:
         st.markdown(f'<div style="{_sh}">What changed in the filing</div>',
                     unsafe_allow_html=True)
 
-        lc1, lc2 = st.columns(2)
+        lc1, _lc_gap, lc2 = st.columns([10, 1, 10])
         with lc1:
             st.markdown(
-                '<div style="font-size:.78rem;font-weight:600;color:#DC2626;'
-                'margin-bottom:5px">\u25b2 Language added / amplified</div>'
+                '<div style="font-size:.82rem;font-weight:600;color:#DC2626;'
+                'margin-bottom:6px">\u25b2 Language added / amplified</div>'
                 + _pills_html(cs["lang_added"], "#FEF2F2", "#DC2626", "#FECACA"),
                 unsafe_allow_html=True,
             )
         with lc2:
             st.markdown(
-                '<div style="font-size:.78rem;font-weight:600;color:#16A34A;'
-                'margin-bottom:5px">\u25bc Language removed / reduced</div>'
+                '<div style="font-size:.82rem;font-weight:600;color:#16A34A;'
+                'margin-bottom:6px">\u25bc Language removed / reduced</div>'
                 + _pills_html(cs["lang_removed"], "#F0FDF4", "#15803D", "#BBF7D0"),
                 unsafe_allow_html=True,
             )
 
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-        # ── 2 & 3. Section bar + Price chart (side by side) ───────────────
-        sc_col, px_col = st.columns([2, 3])
-
-        with sc_col:
-            st.markdown(f'<div style="{_sh}">Which section flagged it</div>',
-                        unsafe_allow_html=True)
-            st.altair_chart(_section_bar_chart(cs["mda_contrib"], cs["rf_contrib"]),
-                            use_container_width=True)
+        # ── 2 & 3. Price chart (dominant) + Section bar (side by side) ──────
+        px_col, sc_col = st.columns([65, 35])
 
         with px_col:
             st.markdown(f'<div style="{_sh}">Price timeline</div>',
@@ -2586,19 +2601,68 @@ def _render_case_card(cs: dict) -> None:
             )
             st.altair_chart(_price_chart(cs), use_container_width=True)
 
+        with sc_col:
+            st.markdown(f'<div style="{_sh}">Which section flagged it</div>',
+                        unsafe_allow_html=True)
+            st.altair_chart(_section_bar_chart(cs["mda_contrib"], cs["rf_contrib"]),
+                            use_container_width=True)
+
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
         # ── 4. Analyst take ───────────────────────────────────────────────
         st.markdown(f'<div style="{_sh}">Analyst take</div>',
                     unsafe_allow_html=True)
-        bullets_html = "".join(
-            f'<div style="display:flex;gap:0;padding:7px 12px;'
-            f'background:#F9FAFB;border-left:3px solid #E5E7EB;border-radius:0 6px 6px 0;'
-            f'margin-bottom:6px;font-size:.82rem;color:#374151;line-height:1.55">'
-            f"{b}</div>"
-            for b in cs["analyst_bullets"]
+
+        import re as _re
+
+        _LABEL_COLORS = [
+            ("signal", "#D97706"),
+            ("check next", "#2563EB"),
+            ("fundamental", "#7C3AED"),
+            ("risk", "#DC2626"),
+            ("what happened", "#B91C1C"),
+        ]
+
+        def _bullet_color(label: str) -> str:
+            ll = label.lower()
+            for kw, color in _LABEL_COLORS:
+                if kw in ll:
+                    return color
+            return "#374151"
+
+        def _parse_bullet(b: str):
+            # Strip leading emoji characters and whitespace
+            clean = _re.sub(r'^[^\x00-\x7F\uFE0F\u200D\s]+\s*', '', b).lstrip()
+            m = _re.match(r'<strong>(.*?)</strong>:?\s*(.*)', clean, _re.DOTALL)
+            if m:
+                return m.group(1).rstrip(':'), m.group(2).strip()
+            return '', b
+
+        rows_html = ""
+        for i, b in enumerate(cs["analyst_bullets"]):
+            label, text = _parse_bullet(b)
+            color = _bullet_color(label)
+            divider = (
+                'border-top:1px solid #E5E7EB;' if i > 0 else ''
+            )
+            rows_html += (
+                f'<div style="display:flex;align-items:flex-start;{divider}'
+                f'padding:10px 4px;gap:16px">'
+                f'<div style="flex:0 0 158px;display:flex;align-items:flex-start;gap:7px">'
+                f'<span style="display:inline-block;width:8px;height:8px;border-radius:2px;'
+                f'background:{color};margin-top:4px;flex-shrink:0"></span>'
+                f'<span style="font-size:.82rem;font-weight:700;color:{color};'
+                f'line-height:1.4">{label}</span>'
+                f'</div>'
+                f'<div style="flex:1;font-size:.82rem;color:#6B7280;line-height:1.6">'
+                f'{text}</div>'
+                f'</div>'
+            )
+        st.markdown(
+            f'<div style="border:1px solid #E5E7EB;border-radius:8px;'
+            f'padding:0 14px;background:#FAFAFA">{rows_html}</div>',
+            unsafe_allow_html=True,
         )
-        st.markdown(bullets_html, unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 

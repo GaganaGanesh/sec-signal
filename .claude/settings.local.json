@@ -34,7 +34,14 @@
       "Bash(/Users/Lenovo/sec_signal/venv/bin/python -m py_compile dashboard.py)",
       "Bash(/Users/Lenovo/sec_signal/venv/bin/python3 -c ':*)",
       "Bash(/Users/Lenovo/sec_signal/venv/bin/python -m py_compile similarity_score.py)",
-      "Bash(/Users/Lenovo/sec_signal/venv/bin/python -m py_compile sp500_batch.py)"
+      "Bash(/Users/Lenovo/sec_signal/venv/bin/python -m py_compile sp500_batch.py)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('dashboard.py'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('dashboard.py'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('/Users/Lenovo/sec_signal/dashboard.py'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python3 -c ':*)"
     ]
   }
 }
