@@ -2423,11 +2423,41 @@ def _section_bar_chart(mda: int, rf: int) -> alt.Chart:
     )
 
 
+def _fill_price_quarters(qs_in: list, ps_in: list):
+    """Ensure every quarter from first to last is present; interpolate missing prices."""
+    if not qs_in:
+        return qs_in, ps_in
+    price_map = {_q_key(q): p for q, p in zip(qs_in, ps_in)}
+    label_map = {_q_key(q): q for q in qs_in}
+    first_k, last_k = min(price_map), max(price_map)
+    known_keys = sorted(price_map)
+    out_qs, out_ps = [], []
+    for k in range(first_k, last_k + 1):
+        qn = (k % 4) + 1
+        yy = (k - (k % 4)) // 4 - 2000
+        label = label_map.get(k, f"Q{qn} '{yy:02d}")
+        if k in price_map:
+            price = price_map[k]
+        else:
+            prev_k = max((kk for kk in known_keys if kk < k), default=None)
+            next_k = min((kk for kk in known_keys if kk > k), default=None)
+            if prev_k is not None and next_k is not None:
+                price = price_map[prev_k] + (price_map[next_k] - price_map[prev_k]) * (k - prev_k) / (next_k - prev_k)
+            elif prev_k is not None:
+                price = price_map[prev_k]
+            else:
+                price = price_map[next_k]  # type: ignore[index]
+        out_qs.append(label)
+        out_ps.append(price)
+    return out_qs, out_ps
+
+
 def _price_chart(cs: dict) -> alt.Chart:
-    # ── Sort chronologically using numeric keys ────────────────────────────────
+    # ── Sort chronologically and fill any missing quarters ────────────────────
     pairs = sorted(zip(cs["price_quarters"], cs["prices"]), key=lambda t: _q_key(t[0]))
-    qs = [p[0] for p in pairs]
-    ps = [p[1] for p in pairs]
+    qs_raw = [p[0] for p in pairs]
+    ps_raw = [p[1] for p in pairs]
+    qs, ps = _fill_price_quarters(qs_raw, ps_raw)
     n = len(qs)
     xi = list(range(n))
 
@@ -2631,8 +2661,11 @@ def _render_case_card(cs: dict) -> None:
             return "#374151"
 
         def _parse_bullet(b: str):
-            # Strip leading emoji characters and whitespace
-            clean = _re.sub(r'^[^\x00-\x7F\uFE0F\u200D\s]+\s*', '', b).lstrip()
+            # Find the first <strong> tag — skips any leading emoji/variation selectors
+            idx = b.find('<strong>')
+            if idx == -1:
+                return '', b
+            clean = b[idx:]
             m = _re.match(r'<strong>(.*?)</strong>:?\s*(.*)', clean, _re.DOTALL)
             if m:
                 return m.group(1).rstrip(':'), m.group(2).strip()
