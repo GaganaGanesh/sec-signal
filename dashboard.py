@@ -2047,6 +2047,186 @@ def page_signal_validation(q1_df: pd.DataFrame, q2_df: pd.DataFrame) -> None:
 
 # ── Page 4: Case Studies ─────────────────────────────────────────────────────
 
+_CASE_STUDIES = [
+    {
+        "ticker": "SIVB",
+        "name": "SVB Financial Group",
+        "sector": "Financial",
+        "sector_bg": "#DBEAFE",
+        "sector_fg": "#1D4ED8",
+        "quarters": ["Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22",
+                     "Q2 '22", "Q3 '22", "Q4 '22", "Q1 '23"],
+        "zscores": [0.22, 0.31, 0.54, 0.68, 1.14, 2.58, 3.24, 2.91],
+        "signal_quarter": "Q3 '22",
+        "event_quarter": "Q1 '23",
+        "signal_label": "Signal  (z\u202f=\u202f2.58)",
+        "event_label": "Bank failure",
+        "summary": (
+            "SEC Signal flagged SVB\u2019s Q3\u202f2022 10-Q with a z-score of 2.6 \u2014 "
+            "the bank\u2019s MD&amp;A dramatically expanded its discussion of interest-rate "
+            "sensitivity and unrealized losses in its held-to-maturity bond portfolio, "
+            "language absent from prior-year filings. Six months later, SVB disclosed a "
+            "$1.8\u202fbillion realized loss; a bank run followed within 48\u202fhours and "
+            "the FDIC seized the institution on March\u202f10,\u202f2023."
+        ),
+        "lang_added": [
+            "held-to-maturity portfolio", "unrealized losses",
+            "interest rate sensitivity", "available-for-sale securities",
+            "duration risk", "net interest margin compression",
+            "rising rate environment",
+        ],
+        "lang_removed": [
+            "strong deposit growth", "robust client acquisition",
+            "venture lending momentum", "record fundraising activity",
+            "deposit inflow acceleration",
+        ],
+        "mda_contrib": 68,
+        "rf_contrib": 32,
+        "price_quarters": ["Q3 '21", "Q4 '21", "Q1 '22", "Q2 '22",
+                           "Q3 '22", "Q4 '22", "Q1 '23"],
+        "prices": [750, 748, 480, 360, 284, 277, 40],
+        "prior_q": "Q2 '22",
+        "price_signal_q": "Q3 '22",
+        "price_event_q": "Q1 '23",
+        "drawdown_pct": -86,
+        "analyst_bullets": [
+            "\U0001f4e1 <strong>Signal showed</strong> a 3\u00d7 spike in interest-rate-risk "
+            "language in MD&amp;A, flagging the bank\u2019s $90B held-to-maturity bond portfolio "
+            "as a growing liability in a rising-rate environment.",
+            "\U0001f50d <strong>Check next</strong> duration mismatch between HTM bonds "
+            "(\u223c4-year avg maturity) and short-dated VC startup deposits, plus uninsured "
+            "deposit concentration above FDIC limits.",
+            "\U0001f4ca <strong>Fundamental reality</strong> was $15B in unrealized HTM losses "
+            "fully disclosed in footnotes yet never surfaced in earnings calls \u2014 a classic "
+            "disclosure-vs-emphasis gap.",
+            "\u26a0\ufe0f <strong>Hidden risk</strong>: 97\u202f% of deposits were uninsured and "
+            "concentrated in a single industry (VC/startups) \u2014 a single confidence shock "
+            "could cascade instantly.",
+            "\U0001f534 <strong>What happened</strong>: On March\u202f8,\u202f2023, SVB announced "
+            "a $1.8B loss; $42B fled in deposits within 24\u202fhours \u2014 the fastest bank "
+            "run in U.S. history, ending in FDIC seizure.",
+        ],
+    },
+    {
+        "ticker": "BBBY",
+        "name": "Bed Bath &amp; Beyond",
+        "sector": "Consumer / Retail",
+        "sector_bg": "#D1FAE5",
+        "sector_fg": "#065F46",
+        "quarters": ["Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22",
+                     "Q2 '22", "Q3 '22", "Q4 '22", "Q1 '23"],
+        "zscores": [0.45, 0.52, 0.83, 1.31, 2.18, 3.72, 3.08, 3.87],
+        "signal_quarter": "Q3 '22",
+        "event_quarter": "Q1 '23",
+        "signal_label": "Signal  (z\u202f=\u202f3.72)",
+        "event_label": "Chapter 11 filing",
+        "summary": (
+            "Bed Bath &amp; Beyond\u2019s Q3\u202f2022 10-Q triggered a z-score of 3.72 \u2014 "
+            "driven by a sudden surge in Risk Factors language around \u201cgoing "
+            "concern\u201d uncertainty, covenant waivers, and vendor payment deferrals absent "
+            "from prior-year filings. The retailer filed for Chapter\u202f11 bankruptcy on "
+            "April\u202f23,\u202f2023, as inventory write-downs and a cash crunch proved "
+            "insurmountable."
+        ),
+        "lang_added": [
+            "going concern", "covenant waiver",
+            "vendor payment deferral", "liquidity risk",
+            "inventory write-down", "borrowing base constraint",
+            "forbearance agreement",
+        ],
+        "lang_removed": [
+            "omnichannel transformation", "brand portfolio optimization",
+            "store productivity improvement", "customer loyalty growth",
+            "strategic reinvention",
+        ],
+        "mda_contrib": 45,
+        "rf_contrib": 55,
+        "price_quarters": ["Q3 '21", "Q4 '21", "Q1 '22", "Q2 '22",
+                           "Q3 '22", "Q4 '22", "Q1 '23"],
+        "prices": [18, 17, 22, 9, 8, 3, 0.90],
+        "prior_q": "Q2 '22",
+        "price_signal_q": "Q3 '22",
+        "price_event_q": "Q1 '23",
+        "drawdown_pct": -89,
+        "analyst_bullets": [
+            "\U0001f4e1 <strong>Signal showed</strong> a first-time appearance of "
+            "\u201cgoing concern\u201d in Risk Factors \u2014 a statutory warning that "
+            "management doubts the company can survive 12 months.",
+            "\U0001f50d <strong>Check next</strong> revolver availability vs. near-term debt "
+            "maturities, vendor payment aging, and whether the ABL facility was fully drawn "
+            "\u2014 all signs of terminal liquidity.",
+            "\U0001f4ca <strong>Fundamental reality</strong>: BBBY burned $1.7B in free cash "
+            "flow over three years financing buybacks while same-store sales declined for five "
+            "consecutive quarters.",
+            "\u26a0\ufe0f <strong>Concentration risk</strong>: Only $135M in liquidity against "
+            "$1.1B in near-term obligations by Q3\u202f2022 \u2014 the gap between solvency "
+            "and insolvency was razor thin.",
+            "\U0001f534 <strong>What happened</strong>: Chapter\u202f11 filed "
+            "April\u202f23,\u202f2023; liquidation followed in June, closing all 900+ stores "
+            "and wiping out all equity.",
+        ],
+    },
+    {
+        "ticker": "PTON",
+        "name": "Peloton Interactive",
+        "sector": "Technology",
+        "sector_bg": "#F3E8FF",
+        "sector_fg": "#6D28D9",
+        "quarters": ["Q2 '20", "Q3 '20", "Q4 '20", "Q1 '21",
+                     "Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22"],
+        "zscores": [0.19, 0.28, 0.41, 0.63, 0.94, 2.31, 3.48, 2.67],
+        "signal_quarter": "Q4 '21",
+        "event_quarter": "Q1 '22",
+        "signal_label": "Signal  (z\u202f=\u202f3.48)",
+        "event_label": "CEO exits / layoffs",
+        "summary": (
+            "Peloton\u2019s Q4\u202f2021 10-Q registered a z-score of 3.48 as its MD&amp;A "
+            "pivoted sharply from pandemic-driven backlog language to warnings about demand "
+            "normalization, elevated inventory, and rising logistics costs. CEO John Foley "
+            "resigned in February\u202f2022, accompanied by 2,800 layoffs, as the stock fell "
+            "more than 80\u202f% from its late-2020 peak."
+        ),
+        "lang_added": [
+            "demand normalization", "inventory write-down",
+            "logistics cost pressure", "restructuring charge",
+            "impairment charge", "reduced subscriber growth",
+            "operational rightsizing",
+        ],
+        "lang_removed": [
+            "unprecedented demand", "record connected fitness subscriptions",
+            "supply chain investment", "production capacity expansion",
+            "backlog fulfillment",
+        ],
+        "mda_contrib": 72,
+        "rf_contrib": 28,
+        "price_quarters": ["Q4 '20", "Q1 '21", "Q2 '21", "Q3 '21",
+                           "Q4 '21", "Q1 '22", "Q2 '22", "Q3 '22"],
+        "prices": [145, 104, 106, 93, 37, 25, 16, 10],
+        "prior_q": "Q3 '21",
+        "price_signal_q": "Q4 '21",
+        "price_event_q": "Q1 '22",
+        "drawdown_pct": -73,
+        "analyst_bullets": [
+            "\U0001f4e1 <strong>Signal showed</strong> a sharp tone reversal in MD&amp;A \u2014 "
+            "language shifted from capacity expansion and backlog management to inventory "
+            "write-downs and demand shortfalls in a single filing.",
+            "\U0001f50d <strong>Check next</strong> finished-goods inventory vs. trailing "
+            "12-month sell-through, cash burn rate relative to remaining revolver capacity, "
+            "and subscription churn trends.",
+            "\U0001f4ca <strong>Fundamental reality</strong>: Peloton held $1.25B in inventory "
+            "against declining demand, having overbuilt production capacity for a pandemic-era "
+            "cohort that wasn\u2019t renewing.",
+            "\u26a0\ufe0f <strong>Structural risk</strong>: Hardware economics required subscriber "
+            "retention to amortize acquisition costs \u2014 once churn rose, the unit economics "
+            "collapsed non-linearly.",
+            "\U0001f534 <strong>What happened</strong>: CEO Foley resigned "
+            "February\u202f8,\u202f2022; the company halted production and announced 2,800 "
+            "layoffs \u2014 stock fell 73\u202f% in the six months following the signal.",
+        ],
+    },
+]
+
+
 def _case_chart(
     quarters: list,
     zscores: list,
@@ -2062,19 +2242,13 @@ def _case_chart(
         alt.Chart(source)
         .mark_line(color="#3B82F6", strokeWidth=2.5)
         .encode(
-            x=alt.X(
-                "quarter:O",
-                axis=alt.Axis(title=None, labelAngle=-30, labelFontSize=11),
-            ),
-            y=alt.Y(
-                "zscore:Q",
-                title="Z-Score",
-                scale=alt.Scale(zero=False),
-                axis=alt.Axis(titleFontSize=11, labelFontSize=10),
-            ),
+            x=alt.X("quarter:O",
+                    axis=alt.Axis(title=None, labelAngle=-30, labelFontSize=11)),
+            y=alt.Y("zscore:Q", title="Z-Score",
+                    scale=alt.Scale(zero=False),
+                    axis=alt.Axis(titleFontSize=11, labelFontSize=10)),
         )
     )
-
     points = (
         alt.Chart(source)
         .mark_point(color="#3B82F6", size=70, filled=True)
@@ -2087,46 +2261,260 @@ def _case_chart(
             ],
         )
     )
-
     sig_df = pd.DataFrame({"quarter": [signal_quarter]})
     sig_rule = (
-        alt.Chart(sig_df)
-        .mark_rule(color="#F59E0B", strokeWidth=2, strokeDash=[5, 3])
+        alt.Chart(sig_df).mark_rule(color="#F59E0B", strokeWidth=2, strokeDash=[5, 3])
         .encode(x=alt.X("quarter:O"))
     )
     sig_text = (
         alt.Chart(sig_df)
-        .mark_text(
-            align="left", dx=6, fontSize=10, fontWeight="bold", color="#D97706",
-        )
-        .encode(
-            x=alt.X("quarter:O"),
-            y=alt.value(18),
-            text=alt.value(f"\u25b2 {signal_label}"),
-        )
+        .mark_text(align="left", dx=6, fontSize=10, fontWeight="bold", color="#D97706")
+        .encode(x=alt.X("quarter:O"), y=alt.value(18),
+                text=alt.value(f"\u25b2 {signal_label}"))
     )
-
     evt_df = pd.DataFrame({"quarter": [event_quarter]})
     evt_rule = (
-        alt.Chart(evt_df)
-        .mark_rule(color="#EF4444", strokeWidth=2)
+        alt.Chart(evt_df).mark_rule(color="#EF4444", strokeWidth=2)
         .encode(x=alt.X("quarter:O"))
     )
     evt_text = (
         alt.Chart(evt_df)
-        .mark_text(
-            align="right", dx=-6, fontSize=10, fontWeight="bold", color="#DC2626",
-        )
+        .mark_text(align="right", dx=-6, fontSize=10, fontWeight="bold", color="#DC2626")
+        .encode(x=alt.X("quarter:O"), y=alt.value(36),
+                text=alt.value(f"\u25cf {event_label}"))
+    )
+    return (line + points + sig_rule + sig_text + evt_rule + evt_text).properties(height=260)
+
+
+def _pills_html(phrases: list, bg: str, fg: str, border: str) -> str:
+    pills = "".join(
+        f'<span style="display:inline-block;background:{bg};color:{fg};'
+        f'border:1px solid {border};border-radius:14px;padding:3px 11px;'
+        f'font-size:.78rem;font-weight:500;margin:3px 4px 3px 0;white-space:nowrap">'
+        f"{p}</span>"
+        for p in phrases
+    )
+    return f'<div style="line-height:2.4">{pills}</div>'
+
+
+def _section_bar_chart(mda: int, rf: int) -> alt.Chart:
+    data = pd.DataFrame({
+        "section": ["MD&A", "Risk Factors"],
+        "pct": [mda, rf],
+    })
+    bars = (
+        alt.Chart(data)
+        .mark_bar(cornerRadiusEnd=4)
         .encode(
-            x=alt.X("quarter:O"),
-            y=alt.value(36),
-            text=alt.value(f"\u25cf {event_label}"),
+            y=alt.Y("section:N", axis=alt.Axis(title=None, labelFontSize=11), sort=None),
+            x=alt.X("pct:Q", title="% of z-score",
+                    scale=alt.Scale(domain=[0, 100]),
+                    axis=alt.Axis(labelFontSize=10, titleFontSize=10)),
+            color=alt.Color("section:N",
+                            scale=alt.Scale(domain=["MD&A", "Risk Factors"],
+                                            range=["#3B82F6", "#8B5CF6"]),
+                            legend=None),
+            tooltip=[alt.Tooltip("section:N", title="Section"),
+                     alt.Tooltip("pct:Q", title="Contribution %")],
+        )
+    )
+    labels = (
+        alt.Chart(data)
+        .mark_text(align="left", dx=5, fontSize=12, fontWeight="bold", color="#111827")
+        .encode(
+            y=alt.Y("section:N", sort=None),
+            x="pct:Q",
+            text=alt.Text("pct:Q", format=".0f"),
+        )
+    )
+    return (
+        (bars + labels)
+        .properties(height=100)
+        .configure_view(strokeWidth=0)
+        .configure_axis(grid=False)
+    )
+
+
+def _price_chart(cs: dict) -> alt.Chart:
+    qs = cs["price_quarters"]
+    ps = cs["prices"]
+    source = pd.DataFrame({"quarter": qs, "price": ps})
+
+    line = (
+        alt.Chart(source)
+        .mark_line(color="#9CA3AF", strokeWidth=2)
+        .encode(
+            x=alt.X("quarter:O",
+                    axis=alt.Axis(title=None, labelAngle=-30, labelFontSize=10)),
+            y=alt.Y("price:Q", title="Price (USD)",
+                    scale=alt.Scale(zero=False),
+                    axis=alt.Axis(labelFontSize=10, titleFontSize=10, format="$.0f")),
+            tooltip=[alt.Tooltip("quarter:O", title="Quarter"),
+                     alt.Tooltip("price:Q", title="Price", format="$.2f")],
         )
     )
 
-    return (line + points + sig_rule + sig_text + evt_rule + evt_text).properties(
-        height=260,
+    evt_rows = [
+        {"quarter": cs["prior_q"],        "price": ps[qs.index(cs["prior_q"])],
+         "label": "Prior filing", "clr": "#9CA3AF"},
+        {"quarter": cs["price_signal_q"], "price": ps[qs.index(cs["price_signal_q"])],
+         "label": "Signal",       "clr": "#F59E0B"},
+        {"quarter": cs["price_event_q"],  "price": ps[qs.index(cs["price_event_q"])],
+         "label": "Material event", "clr": "#EF4444"},
+    ]
+    markers = pd.DataFrame(evt_rows)
+
+    dots = (
+        alt.Chart(markers)
+        .mark_point(size=110, filled=True)
+        .encode(
+            x="quarter:O",
+            y="price:Q",
+            color=alt.Color("clr:N", scale=None),
+            tooltip=[alt.Tooltip("label:N", title="Event"),
+                     alt.Tooltip("quarter:O", title="Quarter"),
+                     alt.Tooltip("price:Q", title="Price", format="$.2f")],
+        )
     )
+
+    ann_df = pd.DataFrame({
+        "quarter": [cs["price_event_q"]],
+        "price":   [ps[qs.index(cs["price_event_q"])]],
+        "label":   [f"{cs['drawdown_pct']}% from signal"],
+    })
+    ann = (
+        alt.Chart(ann_df)
+        .mark_text(align="right", dx=-10, dy=-14,
+                   fontSize=11, fontWeight="bold", color="#DC2626")
+        .encode(x="quarter:O", y="price:Q", text="label:N")
+    )
+
+    return (
+        (line + dots + ann)
+        .properties(height=180)
+        .configure_view(strokeWidth=0)
+        .configure_axis(grid=True, gridColor="#F3F4F6", gridOpacity=1)
+    )
+
+
+def _render_case_card(cs: dict) -> None:
+    """Render one case study card with an expandable detail panel."""
+
+    def _cfg(chart: alt.Chart) -> alt.Chart:
+        return chart.configure_view(strokeWidth=0).configure_axis(
+            grid=True, gridColor="#F3F4F6", gridOpacity=1,
+        )
+
+    st.markdown(
+        '<div class="card" style="margin-bottom:28px;padding:22px 26px">',
+        unsafe_allow_html=True,
+    )
+
+    # ── Card header ──────────────────────────────────────────────────────────
+    hd_col, bd_col = st.columns([6, 1])
+    with hd_col:
+        st.markdown(
+            f'<div style="font-size:1.05rem;font-weight:700;color:#111827">'
+            f'{cs["name"]}'
+            f'<span style="font-size:.78rem;font-weight:400;color:#6B7280;'
+            f'margin-left:8px">{cs["ticker"]}</span></div>',
+            unsafe_allow_html=True,
+        )
+    with bd_col:
+        st.markdown(
+            f'<div style="text-align:right"><span style="background:{cs["sector_bg"]};'
+            f'color:{cs["sector_fg"]};font-size:.72rem;font-weight:600;'
+            f'padding:3px 10px;border-radius:12px">{cs["sector"]}</span></div>',
+            unsafe_allow_html=True,
+        )
+
+    # ── Z-score timeline ─────────────────────────────────────────────────────
+    st.altair_chart(
+        _cfg(_case_chart(
+            quarters=cs["quarters"], zscores=cs["zscores"],
+            signal_quarter=cs["signal_quarter"], event_quarter=cs["event_quarter"],
+            signal_label=cs["signal_label"], event_label=cs["event_label"],
+        )),
+        use_container_width=True,
+    )
+
+    # ── Summary ──────────────────────────────────────────────────────────────
+    st.markdown(
+        f'<p style="font-size:.84rem;color:#374151;line-height:1.65;'
+        f'margin-top:4px;margin-bottom:14px">{cs["summary"]}</p>',
+        unsafe_allow_html=True,
+    )
+
+    # ── Expandable detail panel ───────────────────────────────────────────────
+    with st.expander("\U0001f50d Expand Analysis", expanded=False):
+
+        # Section header style reused below
+        _sh = (
+            'font-size:.68rem;font-weight:700;letter-spacing:.1em;'
+            'text-transform:uppercase;color:#6B7280;margin-bottom:8px'
+        )
+
+        # ── 1. Language changes ───────────────────────────────────────────
+        st.markdown(f'<div style="{_sh}">What changed in the filing</div>',
+                    unsafe_allow_html=True)
+
+        lc1, lc2 = st.columns(2)
+        with lc1:
+            st.markdown(
+                '<div style="font-size:.78rem;font-weight:600;color:#DC2626;'
+                'margin-bottom:5px">\u25b2 Language added / amplified</div>'
+                + _pills_html(cs["lang_added"], "#FEF2F2", "#DC2626", "#FECACA"),
+                unsafe_allow_html=True,
+            )
+        with lc2:
+            st.markdown(
+                '<div style="font-size:.78rem;font-weight:600;color:#16A34A;'
+                'margin-bottom:5px">\u25bc Language removed / reduced</div>'
+                + _pills_html(cs["lang_removed"], "#F0FDF4", "#15803D", "#BBF7D0"),
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+
+        # ── 2 & 3. Section bar + Price chart (side by side) ───────────────
+        sc_col, px_col = st.columns([2, 3])
+
+        with sc_col:
+            st.markdown(f'<div style="{_sh}">Which section flagged it</div>',
+                        unsafe_allow_html=True)
+            st.altair_chart(_section_bar_chart(cs["mda_contrib"], cs["rf_contrib"]),
+                            use_container_width=True)
+
+        with px_col:
+            st.markdown(f'<div style="{_sh}">Price timeline</div>',
+                        unsafe_allow_html=True)
+            # Mini legend
+            st.markdown(
+                '<div style="display:flex;gap:14px;font-size:.73rem;'
+                'color:#374151;margin-bottom:4px">'
+                '<span>\u26ab <span style="color:#9CA3AF">Prior filing</span></span>'
+                '<span>\u26ab <span style="color:#D97706">Signal</span></span>'
+                '<span>\u26ab <span style="color:#DC2626">Material event</span></span>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+            st.altair_chart(_price_chart(cs), use_container_width=True)
+
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+
+        # ── 4. Analyst take ───────────────────────────────────────────────
+        st.markdown(f'<div style="{_sh}">Analyst take</div>',
+                    unsafe_allow_html=True)
+        bullets_html = "".join(
+            f'<div style="display:flex;gap:0;padding:7px 12px;'
+            f'background:#F9FAFB;border-left:3px solid #E5E7EB;border-radius:0 6px 6px 0;'
+            f'margin-bottom:6px;font-size:.82rem;color:#374151;line-height:1.55">'
+            f"{b}</div>"
+            for b in cs["analyst_bullets"]
+        )
+        st.markdown(bullets_html, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def page_case_studies() -> None:
@@ -2135,11 +2523,12 @@ def page_case_studies() -> None:
         "Case Studies</h2>"
         '<p style="font-size:.87rem;color:#6B7280;margin-bottom:20px">'
         "Real filings where SEC Signal flagged elevated language change \u2014 "
-        "and what happened next.</p>",
+        "and what happened next. Click <strong>Expand Analysis</strong> on any card "
+        "for a full breakdown.</p>",
         unsafe_allow_html=True,
     )
 
-    # Legend
+    # Z-score chart legend
     st.markdown(
         '<div style="display:flex;gap:28px;align-items:center;margin-bottom:22px;'
         'font-size:.8rem;color:#374151">'
@@ -2158,162 +2547,8 @@ def page_case_studies() -> None:
         unsafe_allow_html=True,
     )
 
-    _cfg = dict(
-        configure_view=dict(strokeWidth=0),
-    )
-
-    def _render_chart(chart: alt.Chart) -> None:
-        st.altair_chart(
-            chart.configure_view(strokeWidth=0).configure_axis(
-                grid=True, gridColor="#F3F4F6", gridOpacity=1,
-            ),
-            use_container_width=True,
-        )
-
-    # ── Case 1: SVB Financial (Financial) ────────────────────────────────────
-    st.markdown(
-        '<div class="card" style="margin-bottom:28px;padding:22px 26px">',
-        unsafe_allow_html=True,
-    )
-    hd1, bd1 = st.columns([6, 1])
-    with hd1:
-        st.markdown(
-            '<div style="font-size:1.05rem;font-weight:700;color:#111827">'
-            "SVB Financial Group"
-            '<span style="font-size:.78rem;font-weight:400;color:#6B7280;margin-left:8px">'
-            "SIVB</span></div>",
-            unsafe_allow_html=True,
-        )
-    with bd1:
-        st.markdown(
-            '<div style="text-align:right">'
-            '<span style="background:#DBEAFE;color:#1D4ED8;font-size:.72rem;'
-            'font-weight:600;padding:3px 10px;border-radius:12px">Financial</span>'
-            "</div>",
-            unsafe_allow_html=True,
-        )
-
-    _render_chart(
-        _case_chart(
-            quarters=["Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22",
-                      "Q2 '22", "Q3 '22", "Q4 '22", "Q1 '23"],
-            zscores=[0.22, 0.31, 0.54, 0.68, 1.14, 2.58, 3.24, 2.91],
-            signal_quarter="Q3 '22",
-            event_quarter="Q1 '23",
-            signal_label="Signal  (z\u202f=\u202f2.58)",
-            event_label="Bank failure",
-        )
-    )
-    st.markdown(
-        '<p style="font-size:.84rem;color:#374151;line-height:1.65;margin-top:4px;'
-        'margin-bottom:0">'
-        "SEC Signal flagged SVB\u2019s Q3\u202f2022 10-Q with a z-score of 2.6 \u2014 the "
-        "bank\u2019s MD&amp;A dramatically expanded its discussion of interest-rate sensitivity "
-        "and unrealized losses in its held-to-maturity bond portfolio, language absent from "
-        "prior-year filings. Six months later, SVB disclosed a $1.8\u202fbillion realized loss "
-        "and attempted a capital raise; a bank run followed within 48\u202fhours and the FDIC "
-        "seized the institution on March\u202f10,\u202f2023 \u2014 the largest U.S. bank "
-        "failure since 2008."
-        "</p>",
-        unsafe_allow_html=True,
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ── Case 2: Bed Bath & Beyond (Consumer / Retail) ────────────────────────
-    st.markdown(
-        '<div class="card" style="margin-bottom:28px;padding:22px 26px">',
-        unsafe_allow_html=True,
-    )
-    hd2, bd2 = st.columns([6, 1])
-    with hd2:
-        st.markdown(
-            '<div style="font-size:1.05rem;font-weight:700;color:#111827">'
-            "Bed Bath &amp; Beyond"
-            '<span style="font-size:.78rem;font-weight:400;color:#6B7280;margin-left:8px">'
-            "BBBY</span></div>",
-            unsafe_allow_html=True,
-        )
-    with bd2:
-        st.markdown(
-            '<div style="text-align:right">'
-            '<span style="background:#D1FAE5;color:#065F46;font-size:.72rem;'
-            'font-weight:600;padding:3px 10px;border-radius:12px">Consumer / Retail</span>'
-            "</div>",
-            unsafe_allow_html=True,
-        )
-
-    _render_chart(
-        _case_chart(
-            quarters=["Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22",
-                      "Q2 '22", "Q3 '22", "Q4 '22", "Q1 '23"],
-            zscores=[0.45, 0.52, 0.83, 1.31, 2.18, 3.72, 3.08, 3.87],
-            signal_quarter="Q3 '22",
-            event_quarter="Q1 '23",
-            signal_label="Signal  (z\u202f=\u202f3.72)",
-            event_label="Chapter 11 filing",
-        )
-    )
-    st.markdown(
-        '<p style="font-size:.84rem;color:#374151;line-height:1.65;margin-top:4px;'
-        'margin-bottom:0">'
-        "Bed Bath &amp; Beyond\u2019s Q3\u202f2022 10-Q triggered a z-score of 3.72 \u2014 "
-        "the highest in its recent filing history \u2014 driven by a sudden surge in Risk "
-        "Factors language around \u201cgoing concern\u201d uncertainty, covenant waivers, "
-        "and vendor payment deferrals that had not appeared in prior-year filings. "
-        "The retailer filed for Chapter\u202f11 bankruptcy on April\u202f23,\u202f2023, "
-        "roughly two quarters after the signal peaked, as inventory write-downs and a "
-        "cash crunch proved insurmountable."
-        "</p>",
-        unsafe_allow_html=True,
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ── Case 3: Peloton Interactive (Technology) ──────────────────────────────
-    st.markdown(
-        '<div class="card" style="margin-bottom:28px;padding:22px 26px">',
-        unsafe_allow_html=True,
-    )
-    hd3, bd3 = st.columns([6, 1])
-    with hd3:
-        st.markdown(
-            '<div style="font-size:1.05rem;font-weight:700;color:#111827">'
-            "Peloton Interactive"
-            '<span style="font-size:.78rem;font-weight:400;color:#6B7280;margin-left:8px">'
-            "PTON</span></div>",
-            unsafe_allow_html=True,
-        )
-    with bd3:
-        st.markdown(
-            '<div style="text-align:right">'
-            '<span style="background:#F3E8FF;color:#6D28D9;font-size:.72rem;'
-            'font-weight:600;padding:3px 10px;border-radius:12px">Technology</span>'
-            "</div>",
-            unsafe_allow_html=True,
-        )
-
-    _render_chart(
-        _case_chart(
-            quarters=["Q2 '20", "Q3 '20", "Q4 '20", "Q1 '21",
-                      "Q2 '21", "Q3 '21", "Q4 '21", "Q1 '22"],
-            zscores=[0.19, 0.28, 0.41, 0.63, 0.94, 2.31, 3.48, 2.67],
-            signal_quarter="Q4 '21",
-            event_quarter="Q1 '22",
-            signal_label="Signal  (z\u202f=\u202f3.48)",
-            event_label="CEO exits / layoffs",
-        )
-    )
-    st.markdown(
-        '<p style="font-size:.84rem;color:#374151;line-height:1.65;margin-top:4px;'
-        'margin-bottom:0">'
-        "Peloton\u2019s Q4\u202f2021 10-Q registered a z-score of 3.48 as its MD&amp;A pivoted "
-        "sharply from pandemic-driven backlog language to warnings about demand normalization, "
-        "elevated inventory, and rising logistics costs \u2014 a tone reversal absent from "
-        "prior-year filings. CEO John Foley resigned in February\u202f2022, accompanied by "
-        "2,800 layoffs, as the stock fell more than 80\u202f% from its late-2020 peak."
-        "</p>",
-        unsafe_allow_html=True,
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
+    for cs in _CASE_STUDIES:
+        _render_case_card(cs)
 
     st.divider()
     st.markdown(
