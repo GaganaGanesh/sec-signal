@@ -296,9 +296,8 @@ hr { border-color: #E5E7EB !important; }
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
-DEFAULT_CSV          = Path(__file__).parent / "scores.csv"
-Q2_CSV               = Path(__file__).parent / "scores_q2.csv"
-ANALYST_COVERAGE_JSON = Path(__file__).parent / "analyst_coverage.json"
+DEFAULT_CSV    = Path(__file__).parent / "scores.csv"
+Q2_CSV         = Path(__file__).parent / "scores_q2.csv"
 
 # Quarter selector options — label → (csv_path, display_label)
 QUARTER_OPTIONS: dict[str, tuple[Path, str]] = {
@@ -306,108 +305,6 @@ QUARTER_OPTIONS: dict[str, tuple[Path, str]] = {
     "Q2 2025": (Q2_CSV,      "Q2 2025 vs Q2 2024"),
 }
 DEFAULT_QUARTER = "Q1 2025"
-
-
-# ── Signal Confidence (Chiorean et al. 2025 amplifier factors) ────────────────
-
-_DEFAULT_ANALYST_COVERAGE = 15   # median fallback when yfinance fetch fails
-
-
-@st.cache_data(show_spinner=False)
-def load_analyst_coverage() -> dict:
-    """Load analyst_coverage.json; return {} if file missing."""
-    if not ANALYST_COVERAGE_JSON.exists():
-        return {}
-    import json
-    with open(ANALYST_COVERAGE_JSON) as f:
-        raw = json.load(f)
-    # Replace None (fetch failure) with the default median assumption
-    return {k: (v if v is not None else _DEFAULT_ANALYST_COVERAGE)
-            for k, v in raw.items()}
-
-
-def compute_signal_confidence(row: "pd.Series", coverage_dict: dict) -> float:
-    """Return a Signal Confidence score 1–5 (rounded to nearest 0.5).
-
-    Base = 3, then apply:
-      Z-score   : <-2.0 → +1.0 | <-1.0 → +0.5 | >0 → -1.0
-      Quarter   : Q1 or Q2 → +0.5  (Chiorean et al. stronger signal)
-      Coverage  : <10 analysts → +0.5 | >25 → -0.5
-      Persistent: both quarters negative → +0.5
-    """
-    score = 3.0
-
-    # Z-score adjustment (exclusive tiers)
-    z = row.get("combined_zscore", float("nan"))
-    if isinstance(z, float) and not (z != z):   # not NaN
-        if z < -2.0:
-            score += 1.0
-        elif z < -1.0:
-            score += 0.5
-        elif z > 0.0:
-            score -= 1.0
-
-    # Quarter factor
-    q = str(row.get("quarter", "")).upper().strip()
-    if q in ("Q1", "Q2"):
-        score += 0.5
-
-    # Analyst coverage factor
-    ticker   = str(row.get("ticker", ""))
-    coverage = coverage_dict.get(ticker, _DEFAULT_ANALYST_COVERAGE)
-    if coverage < 10:
-        score += 0.5
-    elif coverage > 25:
-        score -= 0.5
-
-    # Persistence factor  (column added by build_multi_quarter_df merge)
-    if row.get("persistent_signal", False):
-        score += 0.5
-
-    # Cap and round to nearest 0.5
-    score = max(1.0, min(5.0, score))
-    score = round(score * 2) / 2
-    return score
-
-
-def _conf_dots(score: float) -> str:
-    """Return a colored-emoji + filled-circle dot string, e.g. '🟡 ●●●○○'."""
-    n_filled = int(score + 0.5)          # round 1.5→2, 2.5→3, etc.
-    n_filled = max(1, min(5, n_filled))
-    dots = "●" * n_filled + "○" * (5 - n_filled)
-    if score >= 4.0:
-        color = "🟢"
-    elif score >= 3.0:
-        color = "🟡"
-    else:
-        color = "🔴"
-    return f"{color} {dots}"
-
-
-def _conf_factors(row: "pd.Series", coverage_dict: dict) -> str:
-    """Return compact factor breakdown string, e.g. 'Q:+0.5 · Cov:+0.5 · P:+0.0'."""
-    z = row.get("combined_zscore", float("nan"))
-    if isinstance(z, float) and not (z != z):
-        if z < -2.0:   qf = 1.0
-        elif z < -1.0: qf = 0.5
-        elif z > 0.0:  qf = -1.0
-        else:          qf = 0.0
-    else:
-        qf = 0.0
-
-    q   = str(row.get("quarter", "")).upper().strip()
-    qtr = 0.5 if q in ("Q1", "Q2") else 0.0
-
-    ticker   = str(row.get("ticker", ""))
-    coverage = coverage_dict.get(ticker, _DEFAULT_ANALYST_COVERAGE)
-    if coverage < 10:   cov = 0.5
-    elif coverage > 25: cov = -0.5
-    else:               cov = 0.0
-
-    persist = 0.5 if row.get("persistent_signal", False) else 0.0
-
-    def _fmt(v): return f"+{v:.1f}" if v >= 0 else f"{v:.1f}"
-    return f"Z:{_fmt(qf)} · Qtr:{_fmt(qtr)} · Cov:{_fmt(cov)} · P:{_fmt(persist)}"
 
 
 def _parse_args() -> Path:
@@ -1230,19 +1127,11 @@ def render_filter_bar(df: pd.DataFrame) -> tuple[pd.DataFrame, str, str]:
             label_visibility="collapsed", key="sector_filter",
         )
 
-    # Row 2: confidence filter | risk N/A checkbox | show count
-    r2c1, r2c2, r2c3, r2c4 = st.columns([2.5, 1.5, 1, 6])
+    # Row 2: risk N/A checkbox | show count
+    r2c1, r2c2, r2c3 = st.columns([1.5, 1, 8])
     with r2c1:
-        conf_opts = ["All confidence", "🟢 High (4–5)", "🟡 Medium (3)", "🔴 Low (1–2)"]
-        conf_filter = st.selectbox(
-            "Signal confidence",
-            conf_opts,
-            label_visibility="collapsed",
-            key="conf_filter",
-        )
-    with r2c2:
         risk_na = st.checkbox("Risk N/A", key="risk_na_filter")
-    with r2c3:
+    with r2c2:
         show_n = st.selectbox(
             "Show", [100, 250, 500], label_visibility="collapsed", key="show_n"
         )
@@ -1271,18 +1160,6 @@ def render_filter_bar(df: pd.DataFrame) -> tuple[pd.DataFrame, str, str]:
     if risk_na:
         filtered = filtered[filtered["risk_score"].isna()]
 
-    # Confidence filter (only applies if the column was computed)
-    if "signal_confidence" in filtered.columns and conf_filter != "All confidence":
-        if conf_filter == "🟢 High (4–5)":
-            filtered = filtered[filtered["signal_confidence"] >= 4.0]
-        elif conf_filter == "🟡 Medium (3)":
-            filtered = filtered[
-                (filtered["signal_confidence"] >= 3.0) &
-                (filtered["signal_confidence"] < 4.0)
-            ]
-        elif conf_filter == "🔴 Low (1–2)":
-            filtered = filtered[filtered["signal_confidence"] < 3.0]
-
     filtered = filtered.head(show_n).reset_index(drop=True)
     active_sector = sector_filter if sector_filter != "All Sectors" else ""
     return filtered, search, active_sector
@@ -1305,31 +1182,14 @@ def render_table(filtered_df: pd.DataFrame, mq_df: pd.DataFrame | None = None) -
                  "combined_score", "mda_score", "risk_score", "combined_zscore"]
     avail_cols = [c for c in base_cols if c in filtered_df.columns]
 
-    # Sort: valid rows first, failed extraction rows at bottom.
-    # When "Most Changed" is active, secondary sort by signal_confidence descending.
+    # Sort: valid rows first (by z-score), failed extraction rows at bottom
     working = filtered_df.copy()
-    active_signal_filter = st.session_state.get("signal_filter", "All")
-    has_conf = "signal_confidence" in working.columns
-
     if "extraction_status" in working.columns:
         failed_mask = working["extraction_status"] == "failed"
-        good = working[~failed_mask].copy()
-        bad  = working[failed_mask].copy()
-
-        if has_conf and active_signal_filter == "Most Changed":
-            good = good.sort_values(
-                ["signal_confidence", "combined_zscore"],
-                ascending=[False, True],
-            )
-        else:
-            good = good.sort_values("combined_zscore", ascending=True)
-
-        working = pd.concat([good, bad]).reset_index(drop=True)
-    elif has_conf and active_signal_filter == "Most Changed":
-        working = working.sort_values(
-            ["signal_confidence", "combined_zscore"],
-            ascending=[False, True],
-        ).reset_index(drop=True)
+        working = pd.concat([
+            working[~failed_mask].sort_values("combined_zscore"),
+            working[failed_mask],
+        ]).reset_index(drop=True)
 
     display = working[avail_cols].copy().reset_index(drop=True)
 
@@ -1348,14 +1208,6 @@ def render_table(filtered_df: pd.DataFrame, mq_df: pd.DataFrame | None = None) -
         display["signal_flag"] = display["persistent_signal"].apply(
             lambda x: "⚡ Persistent" if x else ""
         )
-
-    # Add confidence columns if computed upstream
-    if has_conf:
-        display["signal_confidence"] = working["signal_confidence"].reset_index(drop=True).values
-        if "conf_dots" in working.columns:
-            display["conf_dots"]    = working["conf_dots"].reset_index(drop=True).values
-        if "conf_factors" in working.columns:
-            display["conf_factors"] = working["conf_factors"].reset_index(drop=True).values
 
     col_config = {
         "ticker":        st.column_config.TextColumn("Ticker", width=80),
@@ -1387,30 +1239,6 @@ def render_table(filtered_df: pd.DataFrame, mq_df: pd.DataFrame | None = None) -
         col_config["signal_flag"] = st.column_config.TextColumn(
             "Multi-Q", width=110,
             help="⚡ Persistent = negative z-score in both quarters",
-        )
-
-    if has_conf and "conf_dots" in display.columns:
-        show_cols += ["conf_dots", "conf_factors"]
-        col_config["conf_dots"] = st.column_config.TextColumn(
-            "Confidence",
-            width=130,
-            help=(
-                "Signal Confidence — based on Chiorean et al. (2025) amplifier factors. "
-                "Not backtested.\n\n"
-                "🟢 4–5  High   🟡 3  Medium   🔴 1–2  Low\n\n"
-                "Factors: Z-score tier · Filing quarter (Q1/Q2) · "
-                "Analyst coverage · Multi-quarter persistence"
-            ),
-        )
-        col_config["conf_factors"] = st.column_config.TextColumn(
-            "Factor breakdown",
-            width=220,
-            help=(
-                "Z: z-score tier adjustment\n"
-                "Qtr: filing quarter bonus (Q1/Q2 = +0.5)\n"
-                "Cov: analyst coverage (<10 = +0.5, >25 = −0.5)\n"
-                "P: persistence bonus (both quarters negative = +0.5)"
-            ),
         )
 
     # ── Pulsing dot onboarding hint (first-time users) ────────────────────────
@@ -2129,41 +1957,8 @@ def page_company_screener(df: pd.DataFrame, mq_df: pd.DataFrame) -> None:
         unsafe_allow_html=True,
     )
 
-    # ── Attach persistent_signal + compute Signal Confidence ──────────────────
-    coverage = load_analyst_coverage()
-    enriched = df.copy()
-
-    # Merge persistent_signal from mq_df so the scoring function can use it
-    if mq_df is not None and len(mq_df) > 0 and "persistent_signal" in mq_df.columns:
-        enriched = enriched.merge(
-            mq_df[["ticker", "persistent_signal"]], on="ticker", how="left"
-        )
-        enriched["persistent_signal"] = enriched["persistent_signal"].fillna(False)
-    else:
-        enriched["persistent_signal"] = False
-
-    enriched["signal_confidence"] = enriched.apply(
-        lambda r: compute_signal_confidence(r, coverage), axis=1
-    )
-    enriched["conf_dots"]    = enriched["signal_confidence"].apply(_conf_dots)
-    enriched["conf_factors"] = enriched.apply(
-        lambda r: _conf_factors(r, coverage), axis=1
-    )
-
-    # ── Confidence attribution note ────────────────────────────────────────────
-    st.markdown(
-        '<div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;'
-        'padding:8px 14px;margin-bottom:10px;font-size:.76rem;color:#6B7280">'
-        '<strong style="color:#374151">Signal confidence</strong> — based on '
-        'Chiorean et al. (2025) amplifier factors. '
-        '<em>Not backtested.</em> '
-        'Factors: z-score tier · filing quarter · analyst coverage · multi-quarter persistence.'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
     # ── Filter bar ─────────────────────────────────────────────────────────────
-    filtered_df, _, active_sector = render_filter_bar(enriched)
+    filtered_df, _, active_sector = render_filter_bar(df)
 
     # ── Table with tooltip hint ────────────────────────────────────────────────
     st.markdown(
