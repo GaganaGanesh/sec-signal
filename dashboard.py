@@ -39,6 +39,7 @@ st.markdown("""
 
 html, body, [class*="css"] {
     font-family: "Inter", "Helvetica Neue", Arial, sans-serif !important;
+    line-height: 1.6 !important;
 }
 
 /* Page background */
@@ -86,11 +87,23 @@ section[data-testid="stSidebar"] .stRadio [data-testid="stMarkdownContainer"] p 
 section[data-testid="stSidebar"] .stRadio label:hover {
     background: rgba(255,255,255,0.06) !important;
 }
+/* Active nav item — left blue accent bar */
+section[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+    border-left: 3px solid #3B82F6 !important;
+    background: rgba(59,130,246,0.12) !important;
+    padding-left: 9px !important;
+    color: #FFFFFF !important;
+}
+/* Inactive nav items — muted */
+section[data-testid="stSidebar"] .stRadio label:not(:has(input:checked)) {
+    border-left: 3px solid transparent !important;
+    color: #9CA3AF !important;
+}
 
 /* ── Section labels ──────────────────────────────────── */
 .sh {
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.10em;
-    text-transform: uppercase; color: #6B7280;
+    font-size: 0.81rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #374151;
     margin: 0 0 10px 0; display: block;
 }
 
@@ -99,8 +112,8 @@ section[data-testid="stSidebar"] .stRadio label:hover {
     background: #FFFFFF;
     border: 1px solid #E5E7EB;
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    padding: 16px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    padding: 24px 26px;
 }
 
 /* ── Badges ──────────────────────────────────────────── */
@@ -113,19 +126,26 @@ section[data-testid="stSidebar"] .stRadio label:hover {
 .badge-green  { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
 .badge-gray   { background: #F9FAFB; color: #6B7280; border: 1px solid #E5E7EB; }
 
-/* ── Top-10 rows — white card with left accent border ─ */
+/* ── Top-10 rows ─────────────────────────────────────── */
+.t10-panel {
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.03);
+}
 .t10-row {
     display: flex; align-items: center; gap: 8px;
     background: #FFFFFF;
-    border: 1px solid #F3F4F6;
-    border-radius: 6px;
-    padding: 8px 10px;
-    margin-bottom: 4px;
+    border: none;
+    border-bottom: 1px solid #F3F4F6;
+    border-radius: 0;
+    padding: 10px 12px;
+    margin-bottom: 0;
 }
-.t10-row:last-child { margin-bottom: 0; }
-.t10-ticker  { font-weight: 700; font-size: .84rem; color: #111827;
-               width: 46px; flex-shrink: 0; font-family: monospace; }
-.t10-company { font-size: .77rem; color: #6B7280; flex: 1;
+.t10-row:last-child { border-bottom: none; }
+.t10-ticker  { font-weight: 700; font-size: .92rem; color: #111827;
+               width: 50px; flex-shrink: 0; font-family: monospace; }
+.t10-company { font-size: .82rem; color: #374151; flex: 1;
                white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .t10-z       { font-family: monospace; font-size: .82rem; font-weight: 700;
                width: 58px; flex-shrink: 0; text-align: right; }
@@ -155,10 +175,12 @@ section[data-testid="stSidebar"] .stRadio label:hover {
 .hm-table td { padding: 7px 10px; font-size: .82rem; color: #374151; vertical-align: middle; }
 .hm-table tr { border-bottom: 1px solid #F3F4F6; }
 .hm-table tr:last-child { border-bottom: none; }
-.hm-sector { font-weight: 500; color: #111827; min-width: 180px; }
+.hm-table tbody tr:nth-child(odd)  { background: #FFFFFF; }
+.hm-table tbody tr:nth-child(even) { background: #F9FAFB; }
+.hm-sector { font-weight: 500; color: #111827; min-width: 180px; text-align: left; }
 .hm-z      { font-family: monospace; font-weight: 700; width: 72px; text-align: right; }
 .hm-count  { color: #9CA3AF; width: 48px; text-align: right; font-size: .78rem; }
-.hm-bar-wrap { width: 140px; }
+.hm-bar-wrap { width: 200px; }
 .hm-bar    { height: 10px; border-radius: 3px; }
 .hm-thead td { font-size: .68rem; font-weight: 700; letter-spacing: .08em;
                text-transform: uppercase; color: #9CA3AF; padding-bottom: 6px;
@@ -203,7 +225,7 @@ section[data-testid="stSidebar"] .stRadio label:hover {
 .diff-label-added   { color: #16A34A; }
 .diff-label-mod     { color: #D97706; }
 
-/* ── KPI metric containers ───────────────────────────── */
+/* ── KPI metric containers (legacy fallback) ─────────── */
 div[data-testid="metric-container"] {
     background: #FFFFFF !important;
     border: 1px solid #E5E7EB !important;
@@ -218,6 +240,24 @@ div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
     color: #111827 !important; font-size: 1.5rem !important; font-weight: 700 !important;
 }
 div[data-testid="metric-container"] div[data-testid="stMetricDelta"] svg { display: none; }
+
+/* ── KPI HTML cards ──────────────────────────────────── */
+.kpi-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 18px 20px 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.kpi-label {
+    font-size: .68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: #9CA3AF; margin-bottom: 8px; display: block;
+}
+.kpi-value {
+    font-size: 1.75rem; font-weight: 700; color: #111827; line-height: 1;
+}
+.kpi-flagged { border-left: 3px solid #DC2626 !important; padding-left: 17px !important; }
+.kpi-stable  { border-left: 3px solid #16A34A !important; padding-left: 17px !important; }
 
 /* ── All buttons — base size fix ─────────────────────── */
 button {
@@ -237,21 +277,23 @@ button {
     min-width: 120px !important;
     min-height: 44px !important;
     padding: 10px 24px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
 }
 .qbtn-wrap button[kind="secondary"] {
     border-radius: 22px !important;
     background: #FFFFFF !important;
-    color: #374151 !important;
-    border: 2px solid #D1D5DB !important;
-    font-weight: 600 !important;
+    color: #9CA3AF !important;
+    border: 1.5px solid #E5E7EB !important;
+    font-weight: 500 !important;
     font-size: .9rem !important;
     min-width: 120px !important;
     min-height: 44px !important;
     padding: 10px 24px !important;
+    box-shadow: none !important;
 }
 .qbtn-wrap button[kind="secondary"]:hover {
     border-color: #9CA3AF !important;
-    color: #111827 !important;
+    color: #374151 !important;
 }
 
 /* ── Tabs ────────────────────────────────────────────── */
@@ -870,16 +912,31 @@ def render_quarter_header(df: pd.DataFrame, page_title: str = "Today's Signal") 
 # ── KPIs ──────────────────────────────────────────────────────────────────────
 
 def render_kpis(df: pd.DataFrame) -> None:
-    total  = len(df)
-    median = df["combined_score"].median()
+    total   = len(df)
+    median  = df["combined_score"].median()
     flagged = int((df["combined_zscore"] < -1).sum())
     stable  = int((df["combined_zscore"] > 1).sum())
 
-    k1, k2, k3, k4 = st.columns(4)
-    with k1: st.metric("Companies Scored",  f"{total:,}")
-    with k2: st.metric("Median Similarity", f"{median:.3f}")
-    with k3: st.metric("⚠ Flagged  (z < −1)", f"{flagged}")
-    with k4: st.metric("✓ Stable  (z > +1)",  f"{stable}")
+    html = f'''
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:4px">
+        <div class="kpi-card">
+            <div class="kpi-label">Companies Scored</div>
+            <div class="kpi-value">{total:,}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Median Similarity</div>
+            <div class="kpi-value">{median:.3f}</div>
+        </div>
+        <div class="kpi-card kpi-flagged">
+            <div class="kpi-label">⚠ Flagged (z &lt; −1)</div>
+            <div class="kpi-value" style="color:#DC2626">{flagged}</div>
+        </div>
+        <div class="kpi-card kpi-stable">
+            <div class="kpi-label">✓ Stable (z &gt; +1)</div>
+            <div class="kpi-value" style="color:#16A34A">{stable}</div>
+        </div>
+    </div>'''
+    st.markdown(html, unsafe_allow_html=True)
 
 
 # ── Top 10 signals ────────────────────────────────────────────────────────────
@@ -938,7 +995,7 @@ def render_top10_signals(df: pd.DataFrame, sector: str = "") -> None:
         st.markdown(f'<p class="sh">🔴 Top 10 Short Signals — Most Changed{sector_tag}</p>',
                     unsafe_allow_html=True)
         st.markdown(
-            f'<div class="card" style="padding:12px 14px">'
+            f'<div class="t10-panel">'
             f'{_rows_html(top_short, "#DC2626")}'
             f'</div>',
             unsafe_allow_html=True,
@@ -948,7 +1005,7 @@ def render_top10_signals(df: pd.DataFrame, sector: str = "") -> None:
         st.markdown(f'<p class="sh">🟢 Top 10 Long Signals — Least Changed{sector_tag}</p>',
                     unsafe_allow_html=True)
         st.markdown(
-            f'<div class="card" style="padding:12px 14px">'
+            f'<div class="t10-panel">'
             f'{_rows_html(top_long, "#16A34A")}'
             f'</div>',
             unsafe_allow_html=True,
@@ -1049,7 +1106,7 @@ def render_sector_heatmap(df: pd.DataFrame) -> None:
         return
 
     abs_max = max(abs(agg["avg_z"].min()), abs(agg["avg_z"].max()), 0.5)
-    bar_max_px = 130  # max bar width in pixels
+    bar_max_px = 190  # max bar width in pixels
 
     def _bar_color(z: float) -> str:
         if z <= -0.5:   return "#DC2626"
@@ -1891,8 +1948,8 @@ def page_market_overview(df: pd.DataFrame, q1_df: pd.DataFrame, q2_df: pd.DataFr
         b_col, x_col = st.columns([11, 1])
         with b_col:
             st.markdown(
-                '<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;'
-                'padding:12px 18px;font-size:.85rem;color:#1E40AF;line-height:1.6">'
+                '<div style="background:#F8FAFF;border:1px solid #E0EAFF;border-radius:8px;'
+                'padding:10px 16px;font-size:.78rem;color:#4B6FA8;line-height:1.6">'
                 '👋 <strong>Welcome to SEC Signal.</strong> This tool tracks year-over-year '
                 'changes in S&P 500 quarterly filings. Companies that change their filings the '
                 'most tend to underperform — use <strong>Company Screener</strong> in the '
@@ -2782,6 +2839,7 @@ def render_sidebar() -> str:
         st.markdown(
             f'<div style="font-size:.76rem;color:#9CA3AF;margin-top:8px;'
             f'padding:8px 10px;background:rgba(255,255,255,0.06);'
+            f'border-top:1px solid rgba(255,255,255,0.08);'
             f'border-radius:6px;line-height:1.5">'
             f'{pages[page]}</div>',
             unsafe_allow_html=True,
